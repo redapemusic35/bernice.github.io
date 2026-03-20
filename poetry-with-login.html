@@ -1,0 +1,1368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Poems by Bernice Mendoza</title>
+
+  <!-- ═══════════════════════════════════════════════════════════════════════
+       SETUP INSTRUCTIONS — read before publishing to GitHub Pages
+       ═══════════════════════════════════════════════════════════════════════
+
+    STEP 1 — Create a Google OAuth Client ID (free, ~5 minutes)
+    ────────────────────────────────────────────────────────────
+    1. Go to https://console.cloud.google.com
+    2. Create a new project (name it anything, e.g. "My Poetry Site")
+    3. Left menu → APIs & Services → OAuth consent screen
+       · Choose "External", click Create
+       · Fill in App name (e.g. "Bernice Mendoza Poems") and your Gmail
+       · Save and continue through all steps (no scopes needed)
+    4. Left menu → APIs & Services → Credentials
+       · Click "+ Create Credentials" → OAuth client ID
+       · Application type: Web application
+       · Authorised JavaScript origins — add BOTH:
+           http://localhost
+           https://YOUR-GITHUB-USERNAME.github.io
+       · Click Create — copy the Client ID shown
+
+    STEP 2 — Paste your details into the CONFIG block below
+    ────────────────────────────────────────────────────────
+    Replace the two placeholder values:
+      GOOGLE_CLIENT_ID  →  the Client ID you just copied
+      AUTHORIZED_EMAIL  →  your Gmail address (only this account can add poems)
+
+    STEP 3 — In Google Cloud Console, set these URLs
+    ──────────────────────────────────────────────────
+    Authorised JavaScript origins:
+      https://redapemusic35.github.io
+
+    Authorised redirect URIs:
+      https://redapemusic35.github.io/bernice.github.io
+
+    STEP 4 — Publish to GitHub Pages
+    ──────────────────────────────────
+    1. Rename this file to  index.html
+    2. Upload it to your  bernice.github.io  repository on GitHub
+       (drag into the repo page, commit to main branch)
+    3. Settings → Pages → Source: Deploy from branch → main → / (root) → Save
+    4. Your site is live at:  https://redapemusic35.github.io/bernice.github.io
+       (takes 1–2 minutes the first time)
+
+    Done! The "+ Add Poem" button is invisible to everyone except you
+    when signed in with the Gmail address in AUTHORIZED_EMAIL.
+  ══════════════════════════════════════════════════════════════════════════ -->
+
+  <script>
+    // ╔══════════════════════════════════════════════════════╗
+    // ║  PASTE YOUR VALUES HERE — the only lines you change  ║
+    // ╚══════════════════════════════════════════════════════╝
+    const CONFIG = {
+      GOOGLE_CLIENT_ID:  '630850190059-r60i60jd2aslb0u4r9joc1gn3r597unm.apps.googleusercontent.com',
+      AUTHORIZED_EMAIL:  'redapemusic35@gmail.com'
+    };
+  </script>
+
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Libre+Baskerville:ital@0;1&family=Josefin+Sans:wght@200;300;400&display=swap" rel="stylesheet" />
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --cream: #faf7f2;
+      --warm-white: #f5f0e8;
+      --ink: #1a1714;
+      --muted: #7a7068;
+      --accent: #b8906a;
+      --border: #ddd5c8;
+    }
+
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--cream);
+      color: var(--ink);
+      font-family: 'Libre Baskerville', Georgia, serif;
+      min-height: 100vh;
+    }
+
+    /* ── SETUP BANNER ── */
+    .setup-banner {
+      background: #2d1f0e;
+      color: #f0d4a8;
+      font-family: 'Josefin Sans', sans-serif;
+      font-size: 0.72rem;
+      font-weight: 300;
+      letter-spacing: 0.1em;
+      text-align: center;
+      padding: 0.8rem 1.5rem;
+      display: none;
+    }
+    .setup-banner a { color: #f0d4a8; }
+    .setup-banner.visible { display: block; }
+
+    /* ── HERO ── */
+    .hero {
+      position: relative;
+      height: 100vh;
+      min-height: 600px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      background: var(--ink);
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 50% 40%, rgba(184,144,106,0.18) 0%, transparent 70%),
+        radial-gradient(ellipse 50% 80% at 20% 80%, rgba(184,144,106,0.08) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .hero-ornament {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(5rem, 15vw, 12rem);
+      font-weight: 300;
+      color: rgba(184,144,106,0.12);
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      white-space: nowrap;
+      pointer-events: none;
+      letter-spacing: 0.3em;
+      user-select: none;
+    }
+    .hero-content {
+      position: relative;
+      z-index: 1;
+      animation: fadeUp 1.4s ease both;
+    }
+    .hero-eyebrow {
+      font-family: 'Josefin Sans', sans-serif;
+      font-weight: 200;
+      font-size: 0.7rem;
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 1.4rem;
+    }
+    .hero-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-weight: 300;
+      font-size: clamp(2.8rem, 8vw, 6.5rem);
+      color: var(--cream);
+      line-height: 1.05;
+      letter-spacing: 0.02em;
+    }
+    .hero-title em { font-style: italic; color: var(--accent); }
+    .hero-subtitle {
+      font-family: 'Josefin Sans', sans-serif;
+      font-weight: 200;
+      font-size: 0.75rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: rgba(250,247,242,0.45);
+      margin-top: 1.6rem;
+    }
+    .hero-scroll {
+      position: absolute;
+      bottom: 2.5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+      color: rgba(250,247,242,0.35);
+      font-family: 'Josefin Sans', sans-serif;
+      font-size: 0.6rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      animation: fadeIn 2s 1s ease both;
+      text-decoration: none;
+    }
+    .hero-scroll::after {
+      content: '';
+      width: 1px;
+      height: 40px;
+      background: linear-gradient(to bottom, rgba(184,144,106,0.6), transparent);
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(250,247,242,0.96);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 clamp(1.5rem, 5vw, 4rem);
+      height: 60px;
+      gap: 1rem;
+    }
+    .nav-brand {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.1rem;
+      font-style: italic;
+      font-weight: 400;
+      color: var(--ink);
+      text-decoration: none;
+      white-space: nowrap;
+    }
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      flex-wrap: nowrap;
+    }
+    .nav-search {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: var(--warm-white);
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      padding: 0.35rem 0.8rem;
+      font-family: 'Josefin Sans', sans-serif;
+      font-size: 0.7rem;
+      font-weight: 300;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+      cursor: pointer;
+      transition: border-color 0.2s;
+      white-space: nowrap;
+    }
+    .nav-search:hover { border-color: var(--muted); }
+
+    /* Add button — hidden until authorized */
+    .btn-add {
+      font-family: 'Josefin Sans', sans-serif;
+      font-size: 0.65rem;
+      font-weight: 300;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--cream);
+      background: var(--ink);
+      border: none;
+      padding: 0.5rem 1.2rem;
+      cursor: pointer;
+      transition: background 0.2s;
+      border-radius: 2px;
+      white-space: nowrap;
+      display: none;
+    }
+    .btn-add:hover { background: var(--accent); }
+    .btn-add.visible { display: inline-block; }
+
+    /* Auth area */
+    .nav-auth { display: flex; align-items: center; gap: 0.6rem; }
+
+    .auth-avatar {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      object-fit: cover;
+      display: none;
+    }
+    .auth-avatar.visible { display: block; }
+
+    .btn-signout {
+      font-family: 'Josefin Sans', sans-serif;
+      font-size: 0.6rem;
+      font-weight: 200;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--muted);
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      display: none;
+      white-space: nowrap;
+      transition: color 0.2s;
+    }
+    .btn-signout:hover { color: var(--ink); }
+    .btn-signout.visible { display: inline; }
+
+    #g-signin-wrap { display: flex; align-items: center; }
+    #g-signin-wrap.hidden { display: none; }
+
+    /* ── MAIN ── */
+    .site-wrap {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 clamp(1.5rem, 5vw, 4rem);
+    }
+    .section-label {
+      font-family: 'Josefin Sans', sans-serif;
+      font-weight: 200;
+      font-size: 0.65rem;
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      color: var(--muted);
+      padding: 3.5rem 0 1.5rem;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 2.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .poem-count { color: var(--accent); }
+
+    /* ── POEM GRID ── */
+    .poem-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1px;
+      background: var(--border);
+      margin-bottom: 6rem;
+    }
+    .poem-card {
+      background: var(--cream);
+      padding: 2.5rem 2rem;
+      cursor: pointer;
+      transition: background 0.2s;
+      display: flex;
+      flex-direction: column;
+      gap: 0.8rem;
+      min-height: 200px;
+      position: relative;
+    }
+    .poem-card:hover { background: var(--warm-white); }
+    .poem-card:hover .card-arrow { opacity: 1; transform: translateX(0); }
+    .card-number {
+      font-family: 'Josefin Sans', sans-serif;
+      font-size: 0.6rem;
+      font-weight: 200;
+      letter-spacing: 0.25em;
+      color: var(--accent);
+    }
+    .card-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.5rem;
+      font-weight: 400;
+      line-height: 1.2;
+      color: var(--ink);
+    }
+    .card-tags { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: auto; }
+    .tag {
+      font-family: 'Josefin Sans', sans-serif;
+      font-size: 0.55rem;
+      font-weight: 300;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--muted);
+      border: 1px solid var(--border);
+      padding: 0.2rem 0.5rem;
+      border-radius: 1px;
+    }
+    .card-arrow {
+      position: absolute;
+      bottom: 1.5rem; right: 1.5rem;
+      font-size: 1rem;
+      color: var(--accent);
+      opacity: 0;
+      transform: translateX(-6px);
+      transition: all 0.25s;
+    }
+    .card-preview {
+      font-size: 0.78rem;
+      font-style: italic;
+      color: var(--muted);
+      line-height: 1.6;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    /* ── POEM READER ── */
+    .overlay {
+      position: fixed; inset: 0;
+      background: rgba(26,23,20,0.6);
+      z-index: 200;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      backdrop-filter: blur(4px);
+    }
+    .overlay.open { display: flex; animation: fadeIn 0.3s ease; }
+
+    .poem-reader {
+      background: var(--cream);
+      max-width: 640px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: clamp(2rem, 5vw, 4rem);
+      animation: slideUp 0.35s ease;
+    }
+    .reader-close {
+      position: sticky; top: 0;
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 2rem;
+      background: var(--cream);
+      padding-bottom: 0.5rem;
+    }
+    .btn-close {
+      background: none;
+      border: 1px solid var(--border);
+      width: 36px; height: 36px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--muted);
+      font-size: 1.1rem;
+      transition: all 0.2s;
+      border-radius: 2px;
+    }
+    .btn-close:hover { border-color: var(--ink); color: var(--ink); }
+    .reader-eyebrow {
+      font-family: 'Josefin Sans', sans-serif;
+      font-size: 0.6rem;
+      font-weight: 200;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 1rem;
+    }
+    .reader-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(1.9rem, 5vw, 3rem);
+      font-weight: 300;
+      line-height: 1.15;
+      color: var(--ink);
+      margin-bottom: 2.5rem;
+    }
+    .reader-divider {
+      width: 40px; height: 1px;
+      background: var(--accent);
+      margin: 0 auto 2.5rem;
+    }
+    .poem-body {
+      font-family: 'Libre Baskerville', serif;
+      font-size: 1rem;
+      line-height: 1.9;
+      color: var(--ink);
+      text-align: center;
+    }
+    .poem-body .stanza { margin-bottom: 1.6em; }
+    .reader-footer {
+      margin-top: 3rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+    .reader-author {
+      font-family: 'Josefin Sans', sans-serif;
+      font-size: 0.65rem;
+      font-weight: 300;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .reader-copyright {
+      font-family: 'Josefin Sans', sans-serif;
+      font-size: 0.6rem;
+      font-weight: 200;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+    }
+
+    /* ── ADD POEM PANEL ── */
+    .add-overlay {
+      position: fixed; inset: 0;
+      background: rgba(26,23,20,0.65);
+      z-index: 300;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      backdrop-filter: blur(4px);
+    }
+    .add-overlay.open { display: flex; animation: fadeIn 0.3s ease; }
+    .add-panel {
+      background: var(--cream);
+      max-width: 620px;
+      width: 100%;
+      max-height: 92vh;
+      overflow-y: auto;
+      padding: clamp(2rem, 5vw, 3.5rem);
+      animation: slideUp 0.35s ease;
+    }
+    .add-panel h2 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 2rem;
+      font-weight: 300;
+      margin-bottom: 0.4rem;
+    }
+    .add-sub {
+      font-family: 'Josefin Sans', sans-serif;
+      font-size: 0.65rem;
+      font-weight: 200;
+      letter-spacing: 0.2em;
+      color: var(--muted);
+      margin-bottom: 2rem;
+      text-transform: uppercase;
+    }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .form-field { display: flex; flex-direction: column; gap: 0.4rem; margin-bottom: 1.2rem; }
+    .form-field label {
+      font-family: 'Josefin Sans', sans-serif;
+      font-size: 0.6rem;
+      font-weight: 300;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .form-field input,
+    .form-field textarea {
+      background: var(--warm-white);
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      padding: 0.65rem 0.8rem;
+      font-family: 'Libre Baskerville', serif;
+      font-size: 0.85rem;
+      color: var(--ink);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .form-field input:focus,
+    .form-field textarea:focus { border-color: var(--accent); }
+    .form-field textarea {
+      resize: vertical;
+      min-height: 220px;
+      line-height: 1.7;
+      font-style: italic;
+    }
+    .form-help {
+      font-family: 'Josefin Sans', sans-serif;
+      font-size: 0.6rem;
+      color: var(--muted);
+      letter-spacing: 0.05em;
+    }
+    .form-actions { display: flex; gap: 0.8rem; justify-content: flex-end; margin-top: 1.5rem; }
+    .btn-cancel {
+      font-family: 'Josefin Sans', sans-serif;
+      font-size: 0.65rem;
+      font-weight: 300;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--muted);
+      background: none;
+      border: 1px solid var(--border);
+      padding: 0.6rem 1.4rem;
+      cursor: pointer;
+      border-radius: 2px;
+      transition: all 0.2s;
+    }
+    .btn-cancel:hover { border-color: var(--muted); color: var(--ink); }
+    .btn-submit {
+      font-family: 'Josefin Sans', sans-serif;
+      font-size: 0.65rem;
+      font-weight: 300;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--cream);
+      background: var(--ink);
+      border: none;
+      padding: 0.6rem 1.6rem;
+      cursor: pointer;
+      border-radius: 2px;
+      transition: background 0.2s;
+    }
+    .btn-submit:hover { background: var(--accent); }
+
+    /* ── SEARCH BAR ── */
+    .search-bar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 150;
+      background: var(--ink);
+      padding: 1rem 2rem;
+      display: none;
+      align-items: center;
+      gap: 1rem;
+    }
+    .search-bar.open { display: flex; animation: fadeIn 0.2s ease; }
+    .search-bar input {
+      flex: 1;
+      background: none;
+      border: none;
+      border-bottom: 1px solid rgba(250,247,242,0.3);
+      color: var(--cream);
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.4rem;
+      font-style: italic;
+      padding: 0.3rem 0;
+      outline: none;
+    }
+    .search-bar input::placeholder { color: rgba(250,247,242,0.3); }
+    .btn-search-close {
+      background: none; border: none;
+      color: rgba(250,247,242,0.5);
+      font-size: 1.2rem; cursor: pointer;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 2.5rem clamp(1.5rem, 5vw, 4rem);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .footer-brand {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1rem;
+      font-style: italic;
+      color: var(--muted);
+    }
+    .footer-copy {
+      font-family: 'Josefin Sans', sans-serif;
+      font-size: 0.6rem;
+      font-weight: 200;
+      letter-spacing: 0.15em;
+      color: var(--muted);
+    }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(28px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; } to { opacity: 1; }
+    }
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 560px) {
+      .form-row { grid-template-columns: 1fr; }
+      .poem-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="setup-banner" id="setup-banner">
+  ⚙️ &nbsp;Google login is not yet configured.
+  Open this file in a text editor and follow the <strong>SETUP INSTRUCTIONS</strong> near the top to enable it.
+</div>
+
+<!-- HERO -->
+<section class="hero" id="top">
+  <div class="hero-ornament">❧</div>
+  <div class="hero-content">
+    <p class="hero-eyebrow">A collection of verse</p>
+    <h1 class="hero-title">Poems by<br><em>Bernice Mendoza</em></h1>
+    <p class="hero-subtitle">Life · Love · Hope · Memory</p>
+  </div>
+  <a class="hero-scroll" href="#poems">Explore</a>
+</section>
+
+<!-- NAV -->
+<nav>
+  <a class="nav-brand" href="#top">Bernice Mendoza</a>
+  <div class="nav-right">
+    <button class="nav-search" onclick="toggleSearch()">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      Search
+    </button>
+    <button class="btn-add" id="btn-add" onclick="openAdd()">+ Add Poem</button>
+    <div class="nav-auth">
+      <div id="g-signin-wrap">
+        <div id="g_id_onload"
+             data-client_id=""
+             data-callback="handleGoogleCredential"
+             data-auto_select="false">
+        </div>
+        <div class="g_id_signin"
+             data-type="standard"
+             data-size="small"
+             data-theme="outline"
+             data-text="sign_in_with"
+             data-shape="rectangular"
+             data-logo_alignment="left">
+        </div>
+      </div>
+      <img class="auth-avatar" id="auth-avatar" src="" alt="Signed in" />
+      <button class="btn-signout" id="btn-signout" onclick="signOut()">Sign out</button>
+    </div>
+  </div>
+</nav>
+
+<!-- SEARCH BAR -->
+<div class="search-bar" id="search-bar">
+  <input type="text" id="search-input" placeholder="Search poems…" oninput="filterPoems()" />
+  <button class="btn-search-close" onclick="toggleSearch()">✕</button>
+</div>
+
+<!-- POEM GRID -->
+<main class="site-wrap" id="poems">
+  <div class="section-label">
+    <span>All Poems</span>
+    <span class="poem-count" id="poem-count"></span>
+  </div>
+  <div class="poem-grid" id="poem-grid"></div>
+</main>
+
+<footer>
+  <span class="footer-brand">Bernice Mendoza</span>
+  <span class="footer-copy">© Bernice I. Mendoza · All rights reserved</span>
+</footer>
+
+<!-- POEM READER OVERLAY -->
+<div class="overlay" id="reader-overlay" onclick="closeReaderOnBg(event)">
+  <article class="poem-reader">
+    <div class="reader-close">
+      <button class="btn-close" onclick="closeReader()">✕</button>
+    </div>
+    <p class="reader-eyebrow" id="r-eyebrow"></p>
+    <h2 class="reader-title" id="r-title"></h2>
+    <div class="reader-divider"></div>
+    <div class="poem-body" id="r-body"></div>
+    <div class="reader-footer">
+      <span class="reader-author">© Bernice I. Mendoza</span>
+      <span class="reader-copyright" id="r-copy"></span>
+    </div>
+  </article>
+</div>
+
+<!-- ADD POEM OVERLAY -->
+<div class="add-overlay" id="add-overlay" onclick="closeAddOnBg(event)">
+  <div class="add-panel">
+    <div style="display:flex;justify-content:flex-end;margin-bottom:1rem;">
+      <button class="btn-close" onclick="closeAdd()">✕</button>
+    </div>
+    <h2>Add a Poem</h2>
+    <p class="add-sub">Your words will appear in the collection instantly</p>
+    <div class="form-row">
+      <div class="form-field">
+        <label for="f-title">Title *</label>
+        <input type="text" id="f-title" placeholder="Poem title" />
+      </div>
+      <div class="form-field">
+        <label for="f-date">Year / Date</label>
+        <input type="text" id="f-date" placeholder="e.g. 2006" />
+      </div>
+    </div>
+    <div class="form-field">
+      <label for="f-tags">Tags</label>
+      <input type="text" id="f-tags" placeholder="e.g. Love, Hope, Memory" />
+      <span class="form-help">Separate tags with commas</span>
+    </div>
+    <div class="form-field">
+      <label for="f-body">Poem Text *</label>
+      <textarea id="f-body" placeholder="Paste or type your poem here.&#10;&#10;Leave a blank line between stanzas."></textarea>
+      <span class="form-help">Blank lines between stanzas are preserved exactly as written</span>
+    </div>
+    <div class="form-actions">
+      <button class="btn-cancel" onclick="closeAdd()">Cancel</button>
+      <button class="btn-submit" onclick="submitPoem()">Add to Collection</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── POEM DATA ─────────────────────────────────────────────────────────────────
+const DEFAULT_POEMS = [
+  { id:1, title:"Don't You Know", date:"", tags:["Life","Metaphor"], body:`Lying deep within your soul
+sleeping desires,
+thoughts too heavy to behold
+floating above
+drawing out wisdom of all creation
+built upon a single thought
+fire blazing
+where no heat can be found
+imagination,
+seeing what has not yet been revealed
+breath,
+the first sign of life,
+I cannot be seen,
+yet I have always been around
+I cannot be found,
+yet I was never hidden
+deep within you
+question and you will find
+answers that I hold
+who am I?  I am you` },
+  { id:2, title:"Remember Me in June", date:"", tags:["Love","Family"], body:`This man of mine put it all together
+our Anniversary, His Birthday,
+Father's Day too, to make it
+on us as he would assume
+easier during the month of June
+
+The children wonder, the wife ponder,
+how can something so important
+come so quickly, to remember to
+love to honor, to care, to
+remember a day when a loved one
+camas to be. to remember a father
+who's important to us. and all the
+other father out there too
+doing the right thing and making it true
+and a wife whose devotion and love needs
+to be esteem.` },
+  { id:3, title:"In The Beautiful Years", date:"2006", tags:["Life","Joy"], body:`Jump when the jumping is good
+Dance when the dancing is easy
+Don't spend your years looking back
+Stay always ready to dance
+
+Sing a song, sing it lively
+Don't stop your ears
+to the laughter of children
+
+Open your eyes
+See the beauty all around you
+So that it don't fade away out of sight
+
+Make a good living when then the living is good
+We can only count on what we have today` },
+  { id:4, title:"Woman, Woman", date:"", tags:["Strength","Healing"], body:`Woman Woman
+Can't you sing again
+Woman Woman
+can't you dance again
+
+What stole the smile
+and replace it with a blank stares
+who can heal the heart
+and make it feel again
+or make it sing again
+
+I hear your cries when no one is listening
+the flattering of your voice  as you
+cleave to life again
+
+what use to bring you joy in everybody's life
+dancing where no music is played
+and singing a song no one can hear
+
+smiles turns into frowns
+looking out of windows glistering with
+the bright new sun
+
+who can hear you as you scream
+silent cries of hurts never healed
+with a tender kiss of someone dear
+never knowing what will come next
+in a world so dimly lit
+filled the empty spaces
+in a world so filled with selfish pride and ambition` },
+  { id:5, title:"One Man's Dream", date:"", tags:["Hope","Dream"], body:`Somewhere a dream is born
+in the midst of despair
+
+Feeding a future where
+only one MAN Would care
+
+Finding hope where
+hatred bare
+
+In a place where
+Dreams lay tuck beneath
+pillows flying high` },
+  { id:6, title:"Beholding the Stone", date:"", tags:["Hope","Mystery"], body:`All is held in a stone
+The shining glistering light
+Picked up by a child
+Hoping in a dream
+Never doubting
+Stone kept in treasure boxes
+Jewels of the innocent
+Found in obscure places
+Walked over by Kings
+
+A sign of hope, wealth
+and prosperity
+Holding the mysteries
+Of the ancient times
+
+Where life seem to stop
+All around the world
+The stone sits still
+And fading memory returns
+
+Beholding the beauty
+Of truth, justice, and judgment` },
+  { id:7, title:"A Mother's Care", date:"", tags:["Family","Faith"], body:`Capture the child attending church
+Awaking from sleep in pew of peace
+Dress in wear a mother only stare
+Content to be beside her fair
+
+Holding the child breach in the seats
+Trying to get back to God's only reach
+
+Dainty little eyes that are of glow
+Have I fail thee so tender and true
+Did I given thee all that I knew` },
+  { id:8, title:"Summer's End", date:"", tags:["Seasons","Memory"], body:`Summer ended with a blast
+Getting ready for school is a task
+Mommy shopping in a dash
+Making impressive school ware the task
+
+Hints of yellow, red, orange
+Trickling down the path
+Clothes matching fall colors
+
+Pencils, papers and notebooks the best
+Smells of crayons, new clothes, fall leaves
+Scents of summers past` },
+  { id:9, title:"My Longing Soul", date:"", tags:["Longing","Solace"], body:`Am I truly happy when I laugh?
+Singing in the place of tears
+Where I dance and
+sit in front of the sun
+
+When there are lots
+of friends and family
+If no one cares to listen
+All absorb into the life
+that's handed them
+
+I have live to laugh when hungry
+Entering into a place of solace
+Where voices are magnified
+Entering into the pain of exhaustion
+
+Screaming where no one hears
+Captured by fractions of life
+long since past` },
+  { id:10, title:"Pollyanna All Grown Up", date:"", tags:["Healing","Hope"], body:`Pollyanna Pollyanna
+Can you sing again
+pollyanna pollyanna
+why can't you dance
+
+What stole the smile
+and replace them with a blank stairs
+who can heal your heart
+and make you see again
+and make you sing again
+
+I hear your cries when nobody's around
+the floating of your style  as you
+cleave to life again
+
+bringing joy in everybody's life
+dancing to no music
+and singing a song no one can hear
+
+grounds turning to smiles
+looking out of windows glistening with
+the bright new sun
+
+who can hear you as you scream
+salient cries of hurts never healed
+with a tender kiss of someone dear
+
+never knowing what will come next
+in a world so dimly lit
+filled the empty spaces
+in a world so field with
+selfish ambition and pride` },
+  { id:11, title:"Hurtful Words", date:"", tags:["Feelings","Hurt"], body:`I find myself wondering
+Is all true
+Deviated by life turn of onsets
+Where nothing last forever
+
+Joyful songs crush by bitter words
+Raging in inner turmoil
+Reaching out to something that would grasp
+
+Healing hurts in facets of distractions
+Hearing sound inaudible to understand
+Blinded by life's many regrets
+
+Sadness is all too familiar
+If love exist
+Where joy is amidst hurts` },
+  { id:12, title:"Love's Enduring Song", date:"", tags:["Love"], body:`I see the joy in your eyes
+As you talk about the one you love
+The panting of your heart
+Beats with her every thought
+nourishing her every way
+
+If finding a love so true
+That would draw out a passion so pure
+As to create something so beautiful
+
+if  only mere words could express
+Shadowing over a vessel so longing
+of  love's enduring song` },
+  { id:13, title:"The Tempest", date:"", tags:["Feelings","Pain"], body:`These here have I seen as I have traveled by on
+freeways, highways, trains, and planes
+years of hurtful words has taken its total
+
+on the faces that has been marred by so much
+pain in traditions carelessly spoken words
+created by generations of customs buildup in ego
+
+destroying what worth that might have been
+gain in youthful eyes longing for the innocent
+searching and striving to recovering that which was lost.` },
+  { id:14, title:"Snow Dancers", date:"", tags:["Nature","Joy"], body:`Snow Dancers in the clean crisp air
+Falls fancy free on every rooftop and tree
+In snow drifts and window panes
+Beholding its purity while making snow mine
+
+The innocence of a child like spirit
+As the cares of this world flee away
+Brings laughter, peace, and joy
+All over the world again` },
+  { id:15, title:"Abandon Wife", date:"", tags:["Sad","Longing"], body:`Enter into a place where nothing lie
+touching the space close beside
+wondering eyes lingering a little too long
+franchising on what things went wrong
+
+longing for a future where pain subside
+careless words spoken in haste
+broken, untended and unreplace
+
+never leaving yet never belonging
+the harshness of reality
+where only dreams seem to belong` },
+  { id:16, title:"His Dream", date:"", tags:["Hope","Dream"], body:`Somewhere a dream is born
+in the midst of despair
+
+Feeding a future where
+only one MAN Would care
+
+Finding hope where
+hatred bare
+
+In a place where
+Dreams lay tuck beneath
+pillows flying high` },
+  { id:17, title:"The Stars Are Looking at Me", date:"", tags:["Love","Longing"], body:`Looking up into the stars of Heaven
+shining brightly
+Brings wishes for
+another level of love
+
+loving me
+Laughing with me
+not at me
+not about me
+
+Compassionate soul
+forgiving
+forgetting of
+wrongs long since past
+
+Love lost furlong
+Empty emotions
+Desire stub
+starts a life
+each star could light
+a fire in my heart
+
+And let its light shine deep within me
+Gaining back the youthful lust
+Laughter's fuller
+Believing in the unbelievable
+
+Entering into a world only
+dreams could bring about
+Feeling the wrath from a fire long since burnt out
+
+Never holding with deep emotions
+Lost believing things could be different
+As the stars fall
+falling down
+on meadows of ashes` },
+  { id:18, title:"A Love That Heals All", date:"", tags:["Love","Healing"], body:`Was I the coward to not report?
+Covering sin with my pain
+But my love for her
+was greater than my hate for him
+
+His abuse and her love for him
+Made it impossible for me to see clearly
+make me sick that I could not measure
+but her gracious spirit kept me alive
+
+Leaving him was the best thing in my life
+and the worst thing in her life
+Did I do the right thing I think so sometime?
+and some time I think not
+
+Hoping that someday it will all go away
+Each day I wake up and wish it was a another day
+I go on empty inside hoping no one would see
+
+Keeping myself in relationship that's too hurtful for me because
+Remembering would be  painful
+Feeling that I would be better off somewhere else
+
+Can you see my pain?
+Can you feel my hurt?
+Is there something  inside me?
+sometime you may say so
+
+Time heals all wounds and this too will pass
+It may seem like forever what you are going through
+but someday you will look back
+and say I did the right thing.
+
+I loved beyond my pain and fear
+Seeing through the encasement of my terror
+Yet love concurred all` },
+  { id:19, title:"My Childhood Memories", date:"September 17, 2006", tags:["Memory","Seasons"], body:`Summer ended with a blast
+Getting ready for school is a task
+Mommies shopping in a dash
+Making impressive schoolware her tasked
+
+fall colors, hints of yellow, red, orange
+Trickling down the path
+new clothes, colors matching,
+
+Pencils, papers, and notebooks the best
+Smells of crayons, leaves falling
+Scents of summers past` },
+  { id:20, title:"My Heart", date:"August 29, 2006", tags:["Hope","Healing"], body:`This is my heart
+my cause to fight
+to heal the hurt
+that was not right
+
+to empty the trash
+and fill its place
+that cause this heart
+Of mine to break` },
+  { id:21, title:"True Woman", date:"September 3, 2005", tags:["Hope","Womanhood"], body:`Out of his rib she came
+Fairer than all of God's created beings
+Made to serve
+Made to comfort
+
+More delicate than the pedals
+that drop with the morning dew
+
+Virtue found in her arms
+wisdom found in her lips
+
+If you would walk her path
+you may find joy
+You may find sadness
+But you will always find humility
+
+Because she is a created being
+made to please` },
+  { id:22, title:"Captured by Fractions of Life", date:"", tags:["Sad","Feelings"], body:`Is there true happiness in a laugh?
+Singing in the place of tears
+dancing in front of a mirror
+or laying beneath the sun
+
+being surrounded by lots
+of friends and family
+if no one cares to share
+the joy or sadness
+
+All absorb in life many facets
+that's handed them
+learning to laugh when hungry
+
+Entering into a place of solace
+Where voices are magnified
+in pain of exhaustion
+
+Screaming where no one hears
+Captured by fractions of life
+long since past` }
+];
+
+// ── STATE ─────────────────────────────────────────────────────────────────────
+let poems        = JSON.parse(localStorage.getItem('bm_poems') || 'null') || DEFAULT_POEMS;
+let nextId       = Math.max(...poems.map(p => p.id)) + 1;
+let isAuthorized = false;
+
+function save() { localStorage.setItem('bm_poems', JSON.stringify(poems)); }
+
+// ── GOOGLE AUTH ───────────────────────────────────────────────────────────────
+function handleGoogleCredential(response) {
+  try {
+    const payload = JSON.parse(atob(response.credential.split('.')[1]));
+    if (payload.email.toLowerCase() === CONFIG.AUTHORIZED_EMAIL.toLowerCase()) {
+      isAuthorized = true;
+      sessionStorage.setItem('bm_auth', JSON.stringify({
+        email: payload.email,
+        picture: payload.picture || ''
+      }));
+      showAuthorizedUI(payload.picture || '');
+    } else {
+      // Wrong account — revoke silently
+      if (window.google) google.accounts.id.revoke(payload.email, () => {});
+    }
+  } catch(e) { console.error('Auth error', e); }
+}
+
+function showAuthorizedUI(picture) {
+  document.getElementById('g-signin-wrap').classList.add('hidden');
+  if (picture) {
+    const av = document.getElementById('auth-avatar');
+    av.src = picture;
+    av.classList.add('visible');
+  }
+  document.getElementById('btn-signout').classList.add('visible');
+  document.getElementById('btn-add').classList.add('visible');
+}
+
+function signOut() {
+  isAuthorized = false;
+  sessionStorage.removeItem('bm_auth');
+  document.getElementById('g-signin-wrap').classList.remove('hidden');
+  document.getElementById('auth-avatar').classList.remove('visible');
+  document.getElementById('btn-signout').classList.remove('visible');
+  document.getElementById('btn-add').classList.remove('visible');
+  if (window.google && google.accounts) google.accounts.id.disableAutoSelect();
+}
+
+function restoreSession() {
+  const s = sessionStorage.getItem('bm_auth');
+  if (!s) return;
+  try {
+    const { picture } = JSON.parse(s);
+    isAuthorized = true;
+    showAuthorizedUI(picture);
+  } catch(e) { sessionStorage.removeItem('bm_auth'); }
+}
+
+window.addEventListener('load', () => {
+  if (CONFIG.GOOGLE_CLIENT_ID.startsWith('YOUR_')) {
+    document.getElementById('setup-banner').classList.add('visible');
+    document.getElementById('g-signin-wrap').classList.add('hidden');
+    return;
+  }
+
+  restoreSession();
+
+  if (!isAuthorized) {
+    // Wait for GSI library to load (it's async)
+    const tryInit = () => {
+      if (window.google && google.accounts && google.accounts.id) {
+        document.getElementById('g_id_onload').setAttribute('data-client_id', CONFIG.GOOGLE_CLIENT_ID);
+        google.accounts.id.initialize({
+          client_id: CONFIG.GOOGLE_CLIENT_ID,
+          callback: handleGoogleCredential,
+          auto_select: false,
+          itp_support: true
+        });
+        google.accounts.id.renderButton(
+          document.querySelector('.g_id_signin'),
+          { theme: 'outline', size: 'small', text: 'sign_in_with', shape: 'rectangular' }
+        );
+      } else {
+        setTimeout(tryInit, 200);
+      }
+    };
+    tryInit();
+  }
+});
+
+// ── RENDER GRID ───────────────────────────────────────────────────────────────
+function renderGrid(list) {
+  document.getElementById('poem-count').textContent =
+    list.length + ' poem' + (list.length !== 1 ? 's' : '');
+  document.getElementById('poem-grid').innerHTML = list.map((p, i) => {
+    const preview  = p.body.split('\n').filter(l => l.trim()).slice(0,2).join(' / ');
+    const tagsHtml = p.tags.map(t => `<span class="tag">${esc(t)}</span>`).join('');
+    return `<div class="poem-card" onclick="openPoem(${p.id})">
+      <span class="card-number">${String(i+1).padStart(2,'0')}</span>
+      <h3 class="card-title">${esc(p.title)}</h3>
+      <p class="card-preview">${esc(preview)}</p>
+      <div class="card-tags">${tagsHtml}</div>
+      <span class="card-arrow">→</span>
+    </div>`;
+  }).join('');
+}
+
+// ── POEM READER ───────────────────────────────────────────────────────────────
+function openPoem(id) {
+  const p = poems.find(x => x.id === id);
+  if (!p) return;
+  document.getElementById('r-eyebrow').textContent = p.tags.join('  ·  ');
+  document.getElementById('r-title').textContent   = p.title;
+  document.getElementById('r-copy').textContent    = p.date || '';
+  document.getElementById('r-body').innerHTML = p.body.split(/\n\s*\n/)
+    .map(s => `<div class="stanza">${esc(s.trim()).replace(/\n/g,'<br>')}</div>`).join('');
+  document.getElementById('reader-overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeReader() {
+  document.getElementById('reader-overlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+function closeReaderOnBg(e) {
+  if (e.target === document.getElementById('reader-overlay')) closeReader();
+}
+
+// ── ADD POEM ─────────────────────────────────────────────────────────────────
+function openAdd() {
+  if (!isAuthorized) return;
+  document.getElementById('add-overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeAdd() {
+  document.getElementById('add-overlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+function closeAddOnBg(e) {
+  if (e.target === document.getElementById('add-overlay')) closeAdd();
+}
+function submitPoem() {
+  if (!isAuthorized) return;
+  const title = document.getElementById('f-title').value.trim();
+  const body  = document.getElementById('f-body').value.trim();
+  if (!title || !body) { alert('Please enter a title and poem text.'); return; }
+  const tags = document.getElementById('f-tags').value.split(',').map(t=>t.trim()).filter(Boolean);
+  const date = document.getElementById('f-date').value.trim();
+  poems.push({ id: nextId++, title, date, tags, body });
+  save();
+  renderGrid(poems);
+  closeAdd();
+  ['f-title','f-date','f-tags','f-body'].forEach(id => { document.getElementById(id).value = ''; });
+}
+
+// ── SEARCH ────────────────────────────────────────────────────────────────────
+function toggleSearch() {
+  const bar = document.getElementById('search-bar');
+  bar.classList.toggle('open');
+  if (bar.classList.contains('open')) document.getElementById('search-input').focus();
+  else { document.getElementById('search-input').value = ''; renderGrid(poems); }
+}
+function filterPoems() {
+  const q = document.getElementById('search-input').value.toLowerCase();
+  renderGrid(q ? poems.filter(p =>
+    p.title.toLowerCase().includes(q) ||
+    p.body.toLowerCase().includes(q) ||
+    p.tags.some(t => t.toLowerCase().includes(q))
+  ) : poems);
+}
+
+// ── UTIL ──────────────────────────────────────────────────────────────────────
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Escape') return;
+  closeReader(); closeAdd();
+  const bar = document.getElementById('search-bar');
+  if (bar.classList.contains('open')) toggleSearch();
+});
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+renderGrid(poems);
+</script>
+</body>
+</html>
