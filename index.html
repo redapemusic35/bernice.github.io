@@ -29,7 +29,7 @@
     ────────────────────────────────────────────────────────
     Replace the two placeholder values:
       GOOGLE_CLIENT_ID  →  the Client ID you just copied
-      AUTHORIZED_EMAIL  →  your Gmail address (only this account can add poems)
+      AUTHORIZED_EMAILS →  list of Gmail addresses who can add poems
 
     STEP 3 — In Google Cloud Console, set these URLs
     ──────────────────────────────────────────────────
@@ -49,7 +49,7 @@
        (takes 1–2 minutes the first time)
 
     Done! The "+ Add Poem" button is invisible to everyone except you
-    when signed in with the Gmail address in AUTHORIZED_EMAIL.
+    when signed in with a Gmail address listed in AUTHORIZED_EMAILS.
   ══════════════════════════════════════════════════════════════════════════ -->
 
   <script>
@@ -57,9 +57,10 @@
     // ║  PASTE YOUR VALUES HERE — the only lines you change  ║
     // ╚══════════════════════════════════════════════════════╝
     const CONFIG = {
-      GOOGLE_CLIENT_ID:  '630850190059-r60i60jd2aslb0u4r9joc1gn3r597unm.apps.googleusercontent.com',
-      AUTHORIZED_EMAIL:  [
-        'redapemusic35@gmail.com' // <- replace with your gmail
+      GOOGLE_CLIENT_ID:    '630850190059-r60i60jd2aslb0u4r9joc1gn3r597unm.apps.googleusercontent.com',
+      AUTHORIZED_EMAILS:  [
+        'redapemusic35@gmail.com',    // owner
+        'victorylove516@gmail.com'    // second authorized user
       ]
     };
   </script>
@@ -1194,19 +1195,27 @@ function save() { localStorage.setItem('bm_poems', JSON.stringify(poems)); }
 // ── GOOGLE AUTH ───────────────────────────────────────────────────────────────
 function handleGoogleCredential(response) {
   try {
-    const payload = JSON.parse(atob(response.credential.split('.')[1]));
-    if (payload.email.toLowerCase() === CONFIG.AUTHORIZED_EMAIL.toLowerCase()) {
+    // Decode JWT payload (no signature verification needed client-side)
+    const base64 = response.credential.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+    const payload = JSON.parse(atob(base64));
+    console.log('Signed in as:', payload.email);
+
+    const allowed = CONFIG.AUTHORIZED_EMAILS.map(e => e.toLowerCase());
+    if (allowed.includes(payload.email.toLowerCase())) {
       isAuthorized = true;
       sessionStorage.setItem('bm_auth', JSON.stringify({
         email: payload.email,
         picture: payload.picture || ''
       }));
       showAuthorizedUI(payload.picture || '');
+      console.log('Authorized — Add Poem button shown.');
     } else {
-      // Wrong account — revoke silently
-      if (window.google) google.accounts.id.revoke(payload.email, () => {});
+      // Not an authorized user — just show a quiet message, do NOT revoke
+      console.log('Signed in but not an authorized editor:', payload.email);
     }
-  } catch(e) { console.error('Auth error', e); }
+  } catch(e) {
+    console.error('Auth error:', e);
+  }
 }
 
 function showAuthorizedUI(picture) {
